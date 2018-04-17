@@ -3,7 +3,12 @@ const useragent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 
 
 var request = require('request');
 var cheerio = require('cheerio');
-var fs = require('fs');
+// var fs = require('fs');
+const MongoClient = require('mongodb').MongoClient;
+// Connection url
+const mongourl = 'mongodb://localhost:27017';
+// Database Name
+const dbName = 'Wanelo';
 
 var options = {
     url: 'https://wanelo.co/search?query=1',
@@ -18,15 +23,8 @@ request(options, function (error, response, body) {
         var totalpage = parseInt($('.page-links .wnl-page').eq($('.page-links .wnl-page').length - 1).text());
         //console.log(totalpage);
 
-        // $('.products-thumbnails a').each(function (index, element) {
-        //     options.url = 'https://wanelo.co' + $(element).attr('href');
-        //     getproduct(options)
-        // });
-
-        for (i = 1; i < 5; i++) {
-            //options.url += '&page=' + i;
+        for (i = 1; i < 21; i++) {
             getproductpage(options.url + '&page=' + i);
-            //console.log(options.url);
         }
     } else {
         console.log(error);
@@ -34,7 +32,7 @@ request(options, function (error, response, body) {
 });
 
 function getproductpage(url) {
-    console.log(url);
+    //console.log(url);
     var options = {
         url: url,
         headers: {
@@ -50,13 +48,13 @@ function getproductpage(url) {
                 getproduct('https://wanelo.co' + $(element).attr('href'))
             });
         } else {
-            console.log(error);
+            console.log("3" + error);
         }
     });
 }
 
 function getproduct(url) {
-    console.log(url);
+    //console.log(url);
     var options = {
         url: url,
         headers: {
@@ -75,7 +73,7 @@ function getproduct(url) {
             //console.log(product);
 
             var newproduct = {
-                id: product.product_id,
+                _id: product.product_id,
                 category: product.category,
                 title: product.name,
                 handle: product.name.split(" ").join("-").toLowerCase(),
@@ -92,7 +90,7 @@ function getproduct(url) {
                 newproduct.thumbnails.push($(element).attr('src'));
             });
 
-            options.url = 'https://wanelo.co/p/' + newproduct.id + '/variants'; //https://wanelo.co/related-products/54677429
+            options.url = 'https://wanelo.co/p/' + newproduct._id + '/variants'; //https://wanelo.co/related-products/54677429
             request(options, function (error, response, body) {
                 if (!error && response.statusCode == 200) {
                     //console.log(body);
@@ -110,19 +108,34 @@ function getproduct(url) {
                     newproduct.optionValues = optionValues;
 
                     //console.log(newproduct);
-                    fs.writeFile('./data/' + newproduct.id + '.json', JSON.stringify(newproduct), function (err) {
-                        if (err) {
-                            throw err;
-                        }
+                    // fs.writeFile('./data/' + newproduct.id + '.json', JSON.stringify(newproduct), function (err) {
+                    //     if (err) {
+                    //         throw err;
+                    //     }
 
-                        console.log('Saved.');
+                    //     console.log('Saved.');
+                    // });
+
+                    // Connect using MongoClient
+                    MongoClient.connect(mongourl, function (err, client) {
+                        // Create a collection we want to drop later
+                        const col = client.db(dbName).collection('products');
+
+                        col.update({ '_id': newproduct._id }, newproduct, { upsert: true }, function (err, result) {
+                            if (err) {
+                                console.log(newproduct);
+                                console.log(err);
+                            }
+                        });
+
+                        client.close();
                     });
                 } else {
-                    console.log(error);
+                    console.log("2" + error);
                 }
             });
         } else {
-            console.log(error);
+            console.log("1" + error);
         }
     });
 }
