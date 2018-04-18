@@ -11,7 +11,7 @@ const mongourl = 'mongodb://localhost:27017';
 const dbName = 'Wanelo';
 
 var options = {
-    url: 'https://wanelo.co/search?query=1',
+    url: 'https://wanelo.co/search?query=adidas',
     headers: {
         'User-Agent': useragent,
         'Cookie': cookie,
@@ -23,18 +23,16 @@ request(options, function (error, response, body) {
         var totalpage = parseInt($('.page-links .wnl-page').eq($('.page-links .wnl-page').length - 1).text());
         //console.log(totalpage);
 
-        for (i = 1; i < 21; i++) {
-            getproductpage(options.url + '&page=' + i);
-        }
+        getproductpage(options.url, 1, totalpage);
     } else {
         console.log(error);
     }
 });
 
-function getproductpage(url) {
+function getproductpage(originalUrl, page, totalpage) {
     //console.log(url);
     var options = {
-        url: url,
+        url: originalUrl + '&page=' + page,
         headers: {
             'User-Agent': useragent,
             'Cookie': cookie,
@@ -49,6 +47,12 @@ function getproductpage(url) {
             });
         } else {
             console.log("3" + error);
+        }
+
+        if (page < totalpage) {
+            setTimeout(() => {
+                getproductpage(originalUrl, page + 1, totalpage)
+            }, 3000);
         }
     });
 }
