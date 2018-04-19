@@ -86,6 +86,8 @@ function getproduct(url) {
                 original_price: product.original_price,
                 vendor: $('.products-show-poster-details a').text(),
                 published: false,
+                savecount: parseInt($('.products-show-controls-save-count-tag-right').text()),
+                reviewcount: parseInt($('.review-info span').text().split(' ')[0].trim()),
                 tags: $('.product-tags').text(),
                 img: $('.products-show-image .product-image').attr('src'),
                 thumbnails: []
@@ -112,28 +114,28 @@ function getproduct(url) {
                     newproduct.optionValues = optionValues;
 
                     //console.log(newproduct);
-                    // fs.writeFile('./data/' + newproduct.id + '.json', JSON.stringify(newproduct), function (err) {
-                    //     if (err) {
-                    //         throw err;
-                    //     }
+                    fs.writeFile('./data/' + newproduct.id + '.json', JSON.stringify(newproduct), function (err) {
+                        if (err) {
+                            throw err;
+                        }
 
-                    //     console.log('Saved.');
-                    // });
-
-                    // Connect using MongoClient
-                    MongoClient.connect(mongourl, function (err, client) {
-                        // Create a collection we want to drop later
-                        const col = client.db(dbName).collection('products');
-
-                        col.update({ '_id': newproduct._id }, newproduct, { upsert: true }, function (err, result) {
-                            if (err) {
-                                console.log(newproduct);
-                                console.log(err);
-                            }
-                        });
-
-                        client.close();
+                        console.log('Saved.');
                     });
+
+                    // // Connect using MongoClient
+                    // MongoClient.connect(mongourl, function (err, client) {
+                    //     // Create a collection we want to drop later
+                    //     const col = client.db(dbName).collection('products');
+
+                    //     col.update({ '_id': newproduct._id }, newproduct, { upsert: true }, function (err, result) {
+                    //         if (err) {
+                    //             console.log(newproduct);
+                    //             console.log(err);
+                    //         }
+                    //     });
+
+                    //     client.close();
+                    // });
                 } else {
                     console.log("2" + error);
                 }
