@@ -7,12 +7,13 @@ var fs = require('fs');
 
 //var count = 1;
 for (let index = 1; index < 8; index++) {
-    getproduct('https://wanelo.co/p/', index, 1);
+    getproduct('https://wanelo.co/p/', index, 1, 'http://39.134.10.23:90');
 }
 
-function getproduct(url, productid, count) {
+function getproduct(url, productid, count, proxy) {
     //console.log(url);
     var options = {
+        proxy: proxy,
         url: url + productid,
         headers: {
             'User-Agent': useragent,
@@ -25,7 +26,7 @@ function getproduct(url, productid, count) {
             var $ = cheerio.load(body);
 
             var productStr = $('meta[name="segment-event-attribution"]').attr('content');
-            if (!productStr) {getproduct('https://wanelo.co/p/', productid + 8, count); return;}
+            if (!productStr) { getproduct('https://wanelo.co/p/', productid + 8, count, proxy); return; }
             var product = JSON.parse(productStr);
             //console.log(product);
 
@@ -75,7 +76,7 @@ function getproduct(url, productid, count) {
                         console.log(productid + '===>Saved.');
                         count = 1;
 
-                        getproduct('https://wanelo.co/p/', productid + 8, count);
+                        getproduct('https://wanelo.co/p/', productid + 8, count, proxy);
                     });
 
                     // // Connect using MongoClient
@@ -96,7 +97,7 @@ function getproduct(url, productid, count) {
                     console.log(productid + "===>2" + error);
 
                     if (count < 99) {
-                        getproduct('https://wanelo.co/p/', productid + 8, count);
+                        getproduct('https://wanelo.co/p/', productid + 8, count, proxy);
                     }
                 }
             });
@@ -112,7 +113,7 @@ function getproduct(url, productid, count) {
             }
 
             if (count < 99) {
-                getproduct('https://wanelo.co/p/', productid + 8, count);
+                getproduct('https://wanelo.co/p/', productid + 8, count, proxy);
             }
         }
     });
